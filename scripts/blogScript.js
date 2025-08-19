@@ -6,7 +6,7 @@ $(function () {
   // 🔄 Function to sync with backend (Vercel serverless API)
   async function syncPosts() {
     try {
-      const response = await fetch("vercel-test-pittsoccers-projects.vercel.app", {
+      const response = await fetch("https://vercel-test-pittsoccers-projects.vercel.app/api/update-posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ posts }),
@@ -62,12 +62,12 @@ $(function () {
   `;
   }
 
-  // escape HTML to prevent injection when rendering user content
+  // escape HTML to prevent injection
   function escapeHtml(text) {
     return $('<div>').text(text).html();
   }
 
-  // filter posts based on search input
+  // search posts
   $("#searchInput").on("input", function () {
     const searchTerm = $(this).val().toLowerCase();
     $("#dev-blog-container .card").each(function () {
@@ -89,9 +89,9 @@ $(function () {
       posts.unshift(newPost);
 
       displayPosts(posts);
-      syncPosts(); // 🔄 save changes to GitHub
+      syncPosts(); // 🔄 save to GitHub
 
-      // toast
+      // toast notification
       const toastElement = document.getElementById('toastSuccess');
       if (toastElement) {
         const toast = new bootstrap.Toast(toastElement);
@@ -130,7 +130,7 @@ $(function () {
     if (confirm("Are you sure you want to delete this post?")) {
       posts.splice(index, 1);
       displayPosts(posts);
-      syncPosts(); // 🔄 save changes to GitHub
+      syncPosts(); // 🔄 save to GitHub
     }
   });
 
@@ -151,7 +151,7 @@ $(function () {
     posts[index].post = newPostText;
 
     displayPosts(posts);
-    syncPosts(); // 🔄 save changes to GitHub
+    syncPosts(); // 🔄 save to GitHub
   });
 
   // cancel edit
