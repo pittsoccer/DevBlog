@@ -6,7 +6,7 @@ $(function () {
   // 🔄 Function to sync with backend (Vercel serverless API)
   async function syncPosts() {
     try {
-      const response = await fetch("https://pittsoccers-projects.vercel.app/api/update-posts", {
+      const response = await fetch("https://vercel-test.vercel.app/api/update-posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ posts }),
