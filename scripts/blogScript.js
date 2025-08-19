@@ -3,13 +3,31 @@ $(function () {
 
   let posts = []; // store posts in memory to allow edits/deletes
 
+  // 🔄 Function to sync with backend (Vercel serverless API)
+  async function syncPosts() {
+    try {
+      const response = await fetch("https://vercel.com/pittsoccers-projects/vercel-test/AtrRGwG8z2XmkgnYMGrUyFGN7umZ", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ posts }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        console.log("✅ Posts synced with GitHub!");
+      } else {
+        console.error("❌ Failed to sync:", data.error);
+      }
+    } catch (err) {
+      console.error("Error syncing posts:", err);
+    }
+  }
+
   // load posts from external JSON file
   async function loadPosts() {
     try {
       const response = await fetch("https://pittsoccer.github.io/DevBlogData/posts.json");
       const data = await response.json();
 
-      // BONUS #1: Sort Function
       // sort posts by date posted, newest first
       posts = data.posts.sort((a, b) => new Date(b.datePosted) - new Date(a.datePosted));
 
@@ -49,7 +67,6 @@ $(function () {
     return $('<div>').text(text).html();
   }
 
-  // BONUS #2: Search Function
   // filter posts based on search input
   $("#searchInput").on("input", function () {
     const searchTerm = $(this).val().toLowerCase();
@@ -69,32 +86,29 @@ $(function () {
 
     if (title && content) {
       const newPost = { title, post: content, datePosted: date };
-      // add to posts array at start
       posts.unshift(newPost);
 
       displayPosts(posts);
+      syncPosts(); // 🔄 save changes to GitHub
 
-      // BONUS #3: BS5 Toast
+      // toast
       const toastElement = document.getElementById('toastSuccess');
       if (toastElement) {
         const toast = new bootstrap.Toast(toastElement);
         toast.show();
       }
 
-      // BONUS #4: BS5 Modal
-      // reset form and hide modal
       $("#addPostModal").modal("hide");
       this.reset();
     }
   });
 
-  // edit & delete posts
+  // edit post
   $("#dev-blog-container").on("click", ".edit-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
     const post = posts[index];
 
-    // replace display with editable inputs
     card.find(".card-body").html(`
       <div class="mb-2">
         <input type="text" class="form-control edit-title" value="${escapeHtml(post.title)}" />
@@ -108,16 +122,19 @@ $(function () {
     `);
   });
 
+  // delete post
   $("#dev-blog-container").on("click", ".delete-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
 
     if (confirm("Are you sure you want to delete this post?")) {
-      posts.splice(index, 1); // Remove from array
+      posts.splice(index, 1);
       displayPosts(posts);
+      syncPosts(); // 🔄 save changes to GitHub
     }
   });
 
+  // save edited post
   $("#dev-blog-container").on("click", ".save-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
@@ -130,14 +147,14 @@ $(function () {
       return;
     }
 
-    // update post in array
     posts[index].title = newTitle;
     posts[index].post = newPostText;
 
-    // re-render posts
     displayPosts(posts);
+    syncPosts(); // 🔄 save changes to GitHub
   });
 
+  // cancel edit
   $("#dev-blog-container").on("click", ".cancel-edit", function () {
     displayPosts(posts);
   });
