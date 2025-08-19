@@ -3,31 +3,13 @@ $(function () {
 
   let posts = []; // store posts in memory to allow edits/deletes
 
-  // 🔄 Function to sync with backend (Vercel serverless API)
-  async function syncPosts() {
-    try {
-      const response = await fetch("https://vercel-test-pittsoccers-projects.vercel.app/api/update-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ posts }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        console.log("✅ Posts synced with GitHub!");
-      } else {
-        console.error("❌ Failed to sync:", data.error);
-      }
-    } catch (err) {
-      console.error("Error syncing posts:", err);
-    }
-  }
-
   // load posts from external JSON file
   async function loadPosts() {
     try {
       const response = await fetch("https://pittsoccer.github.io/DevBlogData/posts.json");
       const data = await response.json();
 
+      // BONUS #1: Sort Function
       // sort posts by date posted, newest first
       posts = data.posts.sort((a, b) => new Date(b.datePosted) - new Date(a.datePosted));
 
@@ -62,12 +44,13 @@ $(function () {
   `;
   }
 
-  // escape HTML to prevent injection
+  // escape HTML to prevent injection when rendering user content
   function escapeHtml(text) {
     return $('<div>').text(text).html();
   }
 
-  // search posts
+  // BONUS #2: Search Function
+  // filter posts based on search input
   $("#searchInput").on("input", function () {
     const searchTerm = $(this).val().toLowerCase();
     $("#dev-blog-container .card").each(function () {
@@ -86,29 +69,32 @@ $(function () {
 
     if (title && content) {
       const newPost = { title, post: content, datePosted: date };
+      // add to posts array at start
       posts.unshift(newPost);
 
       displayPosts(posts);
-      syncPosts(); // 🔄 save to GitHub
 
-      // toast notification
+      // BONUS #3: BS5 Toast
       const toastElement = document.getElementById('toastSuccess');
       if (toastElement) {
         const toast = new bootstrap.Toast(toastElement);
         toast.show();
       }
 
+      // BONUS #4: BS5 Modal
+      // reset form and hide modal
       $("#addPostModal").modal("hide");
       this.reset();
     }
   });
 
-  // edit post
+  // edit & delete posts
   $("#dev-blog-container").on("click", ".edit-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
     const post = posts[index];
 
+    // replace display with editable inputs
     card.find(".card-body").html(`
       <div class="mb-2">
         <input type="text" class="form-control edit-title" value="${escapeHtml(post.title)}" />
@@ -122,19 +108,16 @@ $(function () {
     `);
   });
 
-  // delete post
   $("#dev-blog-container").on("click", ".delete-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
 
     if (confirm("Are you sure you want to delete this post?")) {
-      posts.splice(index, 1);
+      posts.splice(index, 1); // Remove from array
       displayPosts(posts);
-      syncPosts(); // 🔄 save to GitHub
     }
   });
 
-  // save edited post
   $("#dev-blog-container").on("click", ".save-post", function () {
     const card = $(this).closest(".card");
     const index = card.data("index");
@@ -147,14 +130,14 @@ $(function () {
       return;
     }
 
+    // update post in array
     posts[index].title = newTitle;
     posts[index].post = newPostText;
 
+    // re-render posts
     displayPosts(posts);
-    syncPosts(); // 🔄 save to GitHub
   });
 
-  // cancel edit
   $("#dev-blog-container").on("click", ".cancel-edit", function () {
     displayPosts(posts);
   });
