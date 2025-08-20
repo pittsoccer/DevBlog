@@ -1,4 +1,4 @@
-# DevBlog
+# 📰 DevBlog
 CIS-376: Web Development - Project #3
 
 * DevBlogData: https://github.com/pittsoccer/DevBlogData
