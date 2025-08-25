@@ -11,7 +11,7 @@ h1 {
 
 /* image background */
 body {
-	background-image: url("../images/BlueBackground.jpg");
+	background-image: url("../images/BlueBackground4xUpscaled.jpg");
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-attachment: fixed;
@@ -110,4 +110,5 @@ body {
 		height: auto;
 	}
 }
+
 
